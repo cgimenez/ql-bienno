@@ -141,7 +141,7 @@ sudo ./ql stop foobar # sudo is mandatory because you used sudo to start the ins
 
 ## Customize further
 
-The best way to further customize instances is by editing and expanding
+The best way to further customize instances is by forking this repo then editing and expanding
 
 - the Cloud-Init templates located in `./templates`.
 - the `instance_config.go` file
