@@ -1,0 +1,100 @@
+#cloud-config
+
+growpart:
+  mode: auto
+  devices: ['/']
+
+timezone: Europe/Paris
+
+package_update: false
+package_upgrade: false
+
+packages:
+  - git
+  - nano
+{{ if .Config.Samba }}
+  - samba
+  - samba-common-bin
+{{ end }}
+
+users:
+  - name: {{ .Config.UserName }}
+    shell: /bin/bash
+    {{if (eq .ArchInfo.OS "alpine") }}
+    passwd: "*"
+    lock_passwd: false
+    {{else}}
+    lock_passwd: true
+    {{end}}
+    ssh_pwauth: true
+    chpasswd: { expire: False }
+    sudo: ALL=(ALL) NOPASSWD:ALL
+    ssh_authorized_keys:
+      - {{ .NetworkConfig.SshUserPublicKey }}
+
+  - name: root
+    lock_passwd: false
+    hashed_passwd: "$1$SaltSalt$XGRQwHE5EEebl.YgQ3D7c0" # root
+
+write_files:
+  - path: /home/{{ .Config.UserName }}/.bash_aliases
+    permissions: '0644'
+    owner: {{.Config.UserName}}:{{ .Config.UserName }}
+    defer: true
+    content: |
+      PS1='\[\033[01;32m\]\u@\h\[\033[01;34m\] \w\[\033[01;33m\] -$(__git_ps1)\[\033[01;34m\] \$\[\033[00m\] '
+
+{{if (eq .ArchInfo.OS "alpine") }}
+  - path: /etc/resolv.conf
+    content: |
+      nameserver 1.1.1.1
+      nameserver 8.8.8.8
+{{end}}
+
+{{if .Config.Samba }}
+  - path: /etc/samba/smb.conf
+    defer: true
+    content: |
+      [global]
+      min protocol = SMB2
+      workgroup = HOME
+      server string = %%h server
+      hosts allow = ALL
+      log file = /var/log/samba/log.%m
+      max log size = 1000
+      logging = file
+      panic action = /usr/share/samba/panic-action %d
+
+      security = user
+      passdb backend = tdbsam
+
+      smb ports = 139
+
+      [qemu-%h]
+      browseable = yes
+      writable = yes
+      printable = no
+      path = /
+      valid users = {{ .Config.UserName }}
+
+      veto files = /._*/.DS_Store/
+      delete veto files = yes
+{{end}}
+
+runcmd:
+{{if .Config.Samba }}
+  - (echo "debian"; echo "debian") | smbpasswd -s -a {{ .Config.UserName }}
+{{end}}
+{{if .Config.EnableVirtFS}}
+  - mkdir /home/{{ .Config.UserName }}/host
+  - chown {{ .Config.UserName }} /home/{{ .Config.UserName }}/host
+  - mount -t 9p -o trans=virtio mount_tag /home/{{ .Config.UserName }}/host -oversion=9p2000.L
+{{end}}
+
+ssh_keys:
+  rsa_private: |
+    {{ .NetworkConfig.SshServerPrivateKey }}
+
+  rsa_public: {{ .NetworkConfig.SshServerPublicKey }}
+
+ssh_deletekeys: false

@@ -1,0 +1,30 @@
+#cloud-config
+
+# network:
+#   version: 1
+#   config:
+#     - type: physical
+#       name: {{ .NetworkConfig.Iface }}
+#       subnets:
+#          - type: static
+#            address: {{ .Config.IpAddress }}
+#            gateway: {{ .Config.Gateway }}
+#     - type: nameserver
+#       address:
+#         - 1.1.1.1
+#         - 8.8.8.8
+
+network:
+  version: 2
+  ethernets:
+    {{ .NetworkConfig.Iface }}:
+      match:
+        macaddress: {{ .NetworkConfig.MacAddr }}
+      addresses:
+        - {{ .Config.IpAddress }}/24
+        - {{ .NetworkConfig.IPV6 }}/64
+      nameservers:
+        addresses: [1.1.1.1, 8.8.8.8]
+      routes:
+      - to: 0.0.0.0/0
+        via: {{ .Config.Gateway }}

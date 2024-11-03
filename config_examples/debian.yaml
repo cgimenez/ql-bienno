@@ -1,0 +1,7 @@
+image: debian-12-generic-arm64
+ip_address: 192.168.1.70
+ssh_pub_key: .ssh/qemu.pub
+smp: 2
+mem : 8
+disk_size: 40
+user_name: debian

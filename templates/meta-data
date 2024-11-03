@@ -1,0 +1,3 @@
+#cloud-config
+instance-id: qemu-{{ .ID }}
+local-hostname: qemu-{{ .ID }}

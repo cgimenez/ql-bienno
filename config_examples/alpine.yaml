@@ -1,0 +1,7 @@
+image: nocloud_alpine-3.20.3-aarch64-uefi-cloudinit-r0
+ip_address: 192.168.1.71
+ssh_pub_key: .ssh/qemu
+smp: 2
+mem : 8
+disk_size: 40
+user_name: debian

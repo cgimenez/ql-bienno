@@ -1,0 +1,14 @@
+.DS*
+
+downloads/*
+!downloads/.keep
+
+config/*
+!config/.keep
+
+cloud-init
+tmp
+instances
+keys
+
+ql
