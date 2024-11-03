@@ -57,6 +57,8 @@ func main() {
 		err = inst.Protect()
 	case "shell":
 		err = inst.Shell()
+	case "resize":
+		err = inst.Resize()
 	}
 	if err != nil {
 		fmt.Println(err)
